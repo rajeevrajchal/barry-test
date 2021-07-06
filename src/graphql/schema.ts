@@ -76,7 +76,6 @@ export const typeDefs = gql`
             type: String,
             price: Int!,
             number_room: Int!,
-            slot: [String]!
         ): Apartments
 
         #for users
@@ -87,12 +86,10 @@ export const typeDefs = gql`
             role: String!
             password: String!
         ): User
-        
         loginUser(
             email: String!
             password: String!
         ) : User
-        
         #for order
         createOrder(
             user: String!,
