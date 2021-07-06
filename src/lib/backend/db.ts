@@ -12,7 +12,7 @@ export const dbConnect = async () => {
     }
     //ELSE CONNECT
     const db = await mongoose.connect(
-        'mongodb://localhost:27017/barry-test', {
+        'mongodb+srv://rrajchal:freelance@barry-test.5gyfz.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', {
             useNewUrlParser: true,
             useUnifiedTopology: true,
             useFindAndModify: true,

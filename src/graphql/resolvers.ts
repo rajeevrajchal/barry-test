@@ -193,7 +193,8 @@ export const resolvers = {
                 if (!status) {
                     return new Error(message)
                 }
-                if (user.role !== "seller") {
+                const isRoleMatch = includes(["admin", "seller"], user.role)
+                if (isRoleMatch === false) {
                     return new Error("No Access, Only to admin")
                 }
                 const {id} = _args
