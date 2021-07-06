@@ -9,7 +9,12 @@ export const typeDefs = gql`
         type: String!
         price: Int!
         number_room: Int!
-        slot: String!
+        slots: [Slot]!
+    }
+    type Slot {
+        id: ID!
+        date: String!
+        booked: Boolean!
     }
     type User {
         id: ID!
@@ -24,8 +29,8 @@ export const typeDefs = gql`
     }
     type Order {
         id: ID!
+        slot: Slot!
         user: User!
-        userData: User
         apartment: Apartments!
         type: String
         createdAt: String
@@ -61,7 +66,7 @@ export const typeDefs = gql`
             type: String,
             price: Int!,
             number_room: Int!,
-            slot: String
+            slot: [String]!
         ): Apartments
         updateApartment(
             id: ID!,
@@ -71,7 +76,7 @@ export const typeDefs = gql`
             type: String,
             price: Int!,
             number_room: Int!,
-            slot: String
+            slot: [String]!
         ): Apartments
 
         #for users
@@ -92,6 +97,7 @@ export const typeDefs = gql`
         createOrder(
             user: String!,
             apartment: String!,
+            slot: String!,
             type: String,
         ): Order
     }

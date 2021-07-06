@@ -1,5 +1,5 @@
 import mongoose, {Schema} from "mongoose";
-import {rDate, rNumber, rString, uBool, uString} from "@utils/fields";
+import {rDate, reference, rNumber, rString, uString} from "@utils/fields";
 
 const apartmentSchema = new Schema({
     name: rString,
@@ -8,8 +8,7 @@ const apartmentSchema = new Schema({
     type: rString,
     price: rNumber,
     number_room: rNumber,
-    booked: uBool,
-    date: rDate
+    slots: uString
 }, {
     timestamps: true
 })

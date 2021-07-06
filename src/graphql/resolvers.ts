@@ -1,23 +1,29 @@
+import {map, includes} from "lodash";
+import moment from "moment";
+
 import {$FIXME} from "@utils/constant";
-import {map} from "lodash";
+
 import {dbConnect} from "@lib/backend/db";
+import {createToken} from "@lib/backend/jwt";
+import {checkPassword, hashPassword} from "@lib/backend/crypto";
+
 import Apartment from "@models/apartment.model";
 import User from "@models/user.model";
 import Order from "@models/order.model";
-import {checkPassword, hashPassword} from "@lib/backend/crypto";
-import moment from "moment";
-import {createRefreshToken, createToken} from "@lib/backend/jwt";
+import Slot from "@models/slot.model";
 
 dbConnect()
 
 export const resolvers = {
     Query: {
+
         //apartments
         getApartments: async (_parent: $FIXME, _args: $FIXME, _context: $FIXME) => {
             try {
                 const apartments = await Apartment.find()
                 if (apartments) {
-                    return map(apartments, ({_id, name, description, image, type, price, number_room, slot}) => {
+                    return map(apartments, async({_id, name, description, image, type, price, number_room}) => {
+                        const slots = await Slot.find({apartment: _id})
                         return {
                             id: _id,
                             name: name,
@@ -26,11 +32,10 @@ export const resolvers = {
                             type: type,
                             price: price,
                             number_room: number_room,
-                            slot: slot
+                            slots: slots
                         }
                     })
                 }
-                console.log(apartments, 'apartments')
             } catch (e) {
                 throw e
             }
@@ -40,6 +45,7 @@ export const resolvers = {
                 const {id} = _args
                 const apartment = await Apartment.findOne({_id: id})
                 if (apartment) {
+                    const slots = await Slot.find({apartment: id})
                     return {
                         id: apartment._id,
                         name: apartment.name,
@@ -48,27 +54,49 @@ export const resolvers = {
                         type: apartment.type,
                         price: apartment.price,
                         number_room: apartment.number_room,
-                        slot: apartment.slot
+                        slots: slots
                     }
                 }
             } catch (error) {
                 throw error;
             }
         },
+
+        // {slot: {$gte: moment(_args.minDate), $lt: moment(_args.maxDate)}},
+
         findApartments: async (_: $FIXME, _args: $FIXME) => {
             try {
-                console.log(_args)
                 const apartments = await Apartment.find({
                     $or: [
                         {type: _args.type},
                         {name: {$regex: ".*" + _args.name + ".*"}},
                         {price: {$gte: _args.minPrice, $lt: _args.maxPrice}},
                         {number_room: {$gte: _args.minRoom, $lt: _args.maxRoom}},
-                        {slot: {$gte: moment(_args.minDate), $lt: moment(_args.maxDate)}},
                     ]
                 })
-                console.log(apartments)
-                return apartments
+
+                // const slots = await Slot.find({
+                //     $or: [
+                //         {date: {$gte: moment(_args.minDate), $lt: moment(_args.maxDate)}}
+                //     ]
+                // }).populate('apartment')
+                // console.log('the slots', slots)
+
+                if(apartments){
+                    return map(apartments, async({_id, name, description, image, type, price, number_room}) => {
+                        const slots = await Slot.find({apartment: _id})
+                        return {
+                            id: _id,
+                            name: name,
+                            description: description,
+                            image: image,
+                            type: type,
+                            price: price,
+                            number_room: number_room,
+                            slots: slots
+                        }
+                    })
+                }
             } catch (e) {
                 throw e
             }
@@ -97,7 +125,14 @@ export const resolvers = {
         //user
         getUserInfo: async (_parent: $FIXME, _args: $FIXME, _context: $FIXME) => {
             try {
+                const {status, user, message} = _context.token
                 const {id} = _args
+                if (!status) {
+                    return new Error(message)
+                }
+                if (user._id !== id || includes(["seller", "admin"], user.role)) {
+                    return new Error("No Permission")
+                }
                 const userInfo = await User.findOne({_id: id}).populate('createdOrder')
                 const orders = await Order.find({user: id}).populate('apartment')
                 if (userInfo) {
@@ -115,11 +150,27 @@ export const resolvers = {
             }
         }
     },
+
     Mutation: {
         //apartments
         storeApartment: async (_parent: $FIXME, _args: $FIXME, _context: $FIXME) => {
             try {
+                const {status, user, message} = _context.token
+                if (!status) {
+                    return new Error(message)
+                }
+                const isRoleMatch = includes(["admin", "seller"], user.role)
+                if (isRoleMatch === false) {
+                    return new Error("No Access, Only to admin")
+                }
                 const apartment = await Apartment.create(_args)
+                await map(_args.slot, async (slot) => {
+                    return await Slot.create({
+                        date: slot,
+                        booked: false,
+                        apartment: apartment._id,
+                    })
+                })
                 if (apartment) {
                     return {
                         id: apartment._id,
@@ -129,15 +180,22 @@ export const resolvers = {
                         type: apartment.type,
                         price: apartment.price,
                         number_rooms: apartment.number_rooms,
-                        time_slots: apartment.time_slots
                     }
                 }
             } catch (error) {
-                throw error;
+                return error;
             }
         },
-        updateApartment: async (_: $FIXME, _args: $FIXME) => {
+
+        updateApartment: async (_: $FIXME, _args: $FIXME, _context: $FIXME) => {
             try {
+                const {status, user, message} = _context.token
+                if (!status) {
+                    return new Error(message)
+                }
+                if (user.role !== "seller") {
+                    return new Error("No Access, Only to admin")
+                }
                 const {id} = _args
                 const apartment = await Apartment.findOneAndUpdate({_id: id}, _args)
                 if (apartment) {
@@ -156,12 +214,19 @@ export const resolvers = {
                 throw e
             }
         },
-        deleteApartment: async (_: $FIXME, _args: $FIXME) => {
+        deleteApartment: async (_: $FIXME, _args: $FIXME, _context: $FIXME) => {
             try {
+                const {status, user, message} = _context.token
+                if (!status) {
+                    return new Error(message)
+                }
+                if (user.role !== "seller") {
+                    return new Error("No Access, Only to admin")
+                }
                 const {id} = _args
                 const deletedApartment = await Apartment.findByIdAndDelete(id)
                 if (!deletedApartment) {
-                    return 'Please select valid apartment'
+                    return new Error("Please select valid apartment")
                 }
                 if (deletedApartment) {
                     return {
@@ -179,7 +244,7 @@ export const resolvers = {
                 const {email, password} = _args
                 const userExist = await User.findOne({email: email});
                 if (userExist) {
-                    return "User Already Exist"
+                    return new Error("User Already Exist")
                 }
                 const encryptedPassword: string | unknown = await hashPassword(
                     password
@@ -203,13 +268,13 @@ export const resolvers = {
         loginUser: async (_parent: $FIXME, _args: $FIXME, _context: $FIXME) => {
             try {
                 const {email, password} = _args
-                const userExist: $FIXME = await User.findOne({ email: email });
-                if(!userExist){
-                  return "Invalid User"
+                const userExist: $FIXME = await User.findOne({email: email});
+                if (!userExist) {
+                    return new Error("Invalid User")
                 }
                 const isMatch: boolean | unknown = await checkPassword(password, userExist.password);
-                if(!isMatch){
-                    return "Invalid User"
+                if (!isMatch) {
+                    return new Error("Invalid User")
                 }
                 const token = await createToken(userExist);
                 return {
@@ -230,9 +295,7 @@ export const resolvers = {
             try {
                 const order = await Order.create(_args)
                 if (order) {
-                    return {
-                        id: order._id
-                    }
+                    return order
                 }
             } catch (e) {
                 throw e

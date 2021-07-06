@@ -3,6 +3,7 @@ import {reference, rString} from "@utils/fields";
 
 const orderSchema = new Schema({
     type: rString,
+    slot: reference("slots"),
     user: reference("users"),
     apartment: reference("apartments")
 }, {
