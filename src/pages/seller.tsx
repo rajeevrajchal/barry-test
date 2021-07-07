@@ -11,7 +11,7 @@ const Seller = () => {
             case "add":
                 return <AddApartment/>
             case "list":
-                return <ListApartment/>
+                return <ListApartment apartments={[]}/>
             default:
                 return <Text> No Screen</Text>
         }

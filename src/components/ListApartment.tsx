@@ -2,8 +2,14 @@ import React from 'react';
 import {Grid} from "@chakra-ui/react";
 import {map} from "lodash";
 import ApartmentSimpleCard from "@containers/ApartmentSimpleCard";
+import {NextPage} from "next";
+import {$FIXME} from "@utils/constant";
 
-const ListApartment = () => {
+interface ListApartmentInterface {
+    apartments: $FIXME
+}
+const ListApartment: NextPage<ListApartmentInterface> = (props) => {
+    const {apartments} = props
     return (
         <Grid
             width='100%'
@@ -13,8 +19,8 @@ const ListApartment = () => {
             gap={5}
         >
             {
-                map([1, 2, 3, 4, 5,6,7,8,9,10,11,12], item => (
-                    <ApartmentSimpleCard key={item}/>
+                map(apartments, item => (
+                    <ApartmentSimpleCard key={item.id} apartment={item}/>
                 ))
             }
         </Grid>

@@ -1,21 +1,29 @@
 import React from 'react';
 import * as Yup from 'yup';
-import { useFormik } from 'formik';
+import {useFormik} from 'formik';
 import {Button, Input, Select, Stack, Text} from "@chakra-ui/react";
+import {NextPage} from "next";
+import {$FIXME} from "@utils/constant";
 
-const FilterSection = () => {
+
+interface FilterSectionInterface {
+    getFilterData: (obj: $FIXME) => void
+}
+
+const FilterSection: NextPage<FilterSectionInterface> = (props) => {
+    const {getFilterData} = props
     const formik = useFormik({
-        initialValues:{
+        initialValues: {
             type: '',
             minPrice: '',
-            maxPrice:'',
+            maxPrice: '',
             minRoom: '',
-            maxRoom:'',
+            maxRoom: '',
             minDate: '',
-            maxDate:'',
+            maxDate: '',
         },
-        onSubmit: async (values)  => {
-            console.log(' the values are', values)
+        onSubmit: (values) => {
+           getFilterData(values)
         }
     })
     return (
@@ -58,7 +66,7 @@ const FilterSection = () => {
                     name="maxRoom"
                     onChange={formik.handleChange}
                     value={formik.values.maxRoom}
-                    />
+                />
             </Stack>
 
             <Stack width="100%">

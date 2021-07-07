@@ -1,13 +1,36 @@
 import React from 'react';
 import {GridItem, Image, Box, Button, Stack, Text} from "@chakra-ui/react";
+import {NextPage} from "next";
 
-const ApartmentSimpleCard = () => {
+type Slot = {
+    id: string
+    date: string
+    booked: boolean
+}
+type Apartment = {
+    id: string
+    name: string
+    description: string
+    type: string
+    price: number
+    number_room: number
+    slot: Slot[]
+}
+
+interface ApartmentSimpleCard {
+    apartment: Apartment
+}
+
+const ApartmentSimpleCard: NextPage<ApartmentSimpleCard> = (props) => {
+    const {apartment: {id, name, price, number_room}} = props
     return (
         <GridItem w="100%"
                   cursor={'pointer'}
                   _hover={{
-                      boxShadow: "0px 0px 5px 0px rgba(0,0,0,0.7)",
-                      borderRadius: "5px"
+                      filter: "brightness(0.8)"
+                  }}
+                  _active={{
+                      transform: "translateY(1px)"
                   }}
                   transition='.2s ease-in-out'
 
@@ -21,10 +44,13 @@ const ApartmentSimpleCard = () => {
             <Box bg='tomato' borderRadius="0 0 5px 5px">
                 <Box p='1rem'>
                     <Text>
-                        Beautiful House
+                        {name}
                     </Text>
                     <Text>
-                        $20
+                        {`$ ${price}`}
+                    </Text>
+                    <Text>
+                        {number_room}
                     </Text>
                     <Stack spacing={4} direction="row" align="center" marginTop={2}>
                         <Button colorScheme="teal" size="xs">

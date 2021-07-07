@@ -1,30 +1,56 @@
 import Head from 'next/head'
-import {Box, Grid} from "@chakra-ui/react"
+import {Box, Button, Grid} from "@chakra-ui/react"
 import Navbar from "@components/Navbar";
 import FilterSection from "@components/FilterSection";
 import ListApartment from "@components/ListApartment";
 import {gql, useQuery} from "@apollo/client";
 import client from "@lib/apolloClient";
-// import {initializeApollo} from "@lib/apolloClient";
-// import {$FIXME} from "@utils/constant";
+import {$FIXME} from "@utils/constant";
+import {NextPage} from "next";
+import { useState} from "react";
 
-const FetchApartment = gql`
-    query getApartments{
-        name
-        id
-        slots{
-            id
-            date
-            booked
-        }
+interface HomeProps {
+    apartments: $FIXME
+}
+
+const Home: NextPage<HomeProps> = (props) => {
+    const {apartments} = props
+    const [queryApartments, setQueryApartments] = useState(apartments || [])
+
+    const getFilterData = async (query: {
+        name: string,
+        minPrice: number,
+        maxPrice: number,
+        minRoom: number,
+        maxRoom: number,
+        type: string
+    }) => {
+        const FilterQuery = gql`
+            {
+                findApartments(
+                    minPrice:10
+                    maxPrice: 20
+                    minRoom:20
+                    maxRoom:10
+                    name:""
+                    type:""
+                ){
+                    id
+                    name
+                    price
+                    slots{
+                        id
+                        date
+                    }
+                }
+            }
+        `
+        const {loading, data, error} = await client.query({
+            query: FilterQuery
+        })
+        console.log({loading, data, error})
     }
-`
 
-const Home = () => {
-    const {
-        data,
-    } = useQuery(FetchApartment)
-    console.log('the data', data)
     return (
         <>
             <Head>
@@ -45,43 +71,41 @@ const Home = () => {
                     templateColumns="200px 1fr"
                     gap={5}
                 >
-                    <FilterSection/>
-                    <ListApartment/>
+                    <FilterSection getFilterData={getFilterData}/>
+                    <ListApartment apartments={queryApartments}/>
                 </Grid>
             </Box>
         </>
     )
 }
 
-export async function getStaticProps() {
-    await client.query({
-        query: FetchApartment,
+export default Home
+
+export async function getServerSideProps() {
+    const fetchApartment = gql`
+        {
+            getApartments{
+                name
+                id
+                description
+                type
+                price
+                number_room
+                slots{
+                    id
+                    date
+                    booked
+                }
+            }
+        }
+    `
+    const {data: {getApartments}} = await client.query({
+        query: fetchApartment
     })
 
     return {
         props: {
-            initialApolloState: client.cache.extract(),
-        },
+            apartments: getApartments,
+        }
     }
 }
-
-export default Home
-
-// export async function getServerSideProps(ctx:$FIXME) {
-//     const fetchApartment = gql`
-//         query getApartments{
-//             name
-//             id
-//             slots{
-//                 id
-//                 date
-//                 booked
-//             }
-//         }
-//     `
-//     const {data} = await initializeApollo(ctx).query({
-//         query: fetchApartment
-//     })
-//     console.log({data})
-//     return { props: { data } }
-// }
