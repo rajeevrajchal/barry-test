@@ -2,7 +2,7 @@ import { createHttpLink, ApolloClient, InMemoryCache } from "@apollo/client";
 import fetch from 'isomorphic-unfetch';
 
 const httpLink = createHttpLink({
-    uri: 'http://localhost:3000/api/graphql',
+    uri: 'https://barry-test.vercel.app/api/graphql',
     fetch: fetch,
 });
 const client = new ApolloClient({
