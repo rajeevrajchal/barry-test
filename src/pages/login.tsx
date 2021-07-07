@@ -1,7 +1,7 @@
 import React from 'react';
 import {useFormik} from "formik";
 import Navbar from "@components/Navbar";
-import {Button, Grid, Input, Stack, Text} from "@chakra-ui/react";
+import {Button, Grid, Input, Link, Stack, Text} from "@chakra-ui/react";
 
 const Login = () => {
     const formik = useFormik({
@@ -39,11 +39,16 @@ const Login = () => {
                     <Stack>
                         <Text>Password</Text>
                         <Input placeholder="******"
-                               type="text"
+                               type="password"
                                name="password"
                                onChange={formik.handleChange}
                                value={formik.values.password}
                         />
+                    </Stack>
+                    <Stack>
+                        <Text>
+                            No Account? <Link color="teal.500" href="/register">Register</Link>
+                        </Text>
                     </Stack>
                     <Stack width='100%'>
                         <Button colorScheme="teal" size="md" onClick={() => formik.handleSubmit()}>

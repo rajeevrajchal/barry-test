@@ -1,9 +1,7 @@
 import {map, includes} from "lodash";
-import moment from "moment";
 
 import {$FIXME} from "@utils/constant";
 
-import {dbConnect} from "@lib/backend/db";
 import {createToken} from "@lib/backend/jwt";
 import {checkPassword, hashPassword} from "@lib/backend/crypto";
 
@@ -11,12 +9,8 @@ import Apartment from "@models/apartment.model";
 import User from "@models/user.model";
 import Order from "@models/order.model";
 import Slot from "@models/slot.model";
-
-dbConnect()
-
 export const resolvers = {
     Query: {
-
         //apartments
         getApartments: async (_parent: $FIXME, _args: $FIXME, _context: $FIXME) => {
             try {

@@ -1,11 +1,30 @@
 import Head from 'next/head'
-import {map} from "lodash"
-import {Box, Button, Grid, GridItem, Image, Stack, Text} from "@chakra-ui/react"
+import {Box, Grid} from "@chakra-ui/react"
 import Navbar from "@components/Navbar";
-import ApartmentSimpleCard from "@containers/ApartmentSimpleCard";
 import FilterSection from "@components/FilterSection";
+import ListApartment from "@components/ListApartment";
+import {gql, useQuery} from "@apollo/client";
+import client from "@lib/apolloClient";
+// import {initializeApollo} from "@lib/apolloClient";
+// import {$FIXME} from "@utils/constant";
+
+const FetchApartment = gql`
+    query getApartments{
+        name
+        id
+        slots{
+            id
+            date
+            booked
+        }
+    }
+`
 
 const Home = () => {
+    const {
+        data,
+    } = useQuery(FetchApartment)
+    console.log('the data', data)
     return (
         <>
             <Head>
@@ -27,23 +46,42 @@ const Home = () => {
                     gap={5}
                 >
                     <FilterSection/>
-                    <Grid
-                        width='100%'
-                        height="87vh"
-                        overflowY='scroll'
-                        templateColumns="repeat(3, 1fr)"
-                        gap={5}
-                    >
-                        {
-                            map([1, 2, 3, 4, 5,6,7,8,9,10,11,12], item => (
-                                <ApartmentSimpleCard key={item}/>
-                            ))
-                        }
-                    </Grid>
+                    <ListApartment/>
                 </Grid>
             </Box>
         </>
     )
 }
 
+export async function getStaticProps() {
+    await client.query({
+        query: FetchApartment,
+    })
+
+    return {
+        props: {
+            initialApolloState: client.cache.extract(),
+        },
+    }
+}
+
 export default Home
+
+// export async function getServerSideProps(ctx:$FIXME) {
+//     const fetchApartment = gql`
+//         query getApartments{
+//             name
+//             id
+//             slots{
+//                 id
+//                 date
+//                 booked
+//             }
+//         }
+//     `
+//     const {data} = await initializeApollo(ctx).query({
+//         query: fetchApartment
+//     })
+//     console.log({data})
+//     return { props: { data } }
+// }
