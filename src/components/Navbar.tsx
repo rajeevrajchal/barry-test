@@ -1,7 +1,13 @@
 import React from 'react';
-import {Box, Grid, Link} from "@chakra-ui/react";
+import {Box, Button, Grid, Link} from "@chakra-ui/react";
+import {NextPage} from "next";
 
-const Navbar = () => {
+interface NavbarInterface {
+    token?: string
+}
+
+const Navbar: NextPage<NavbarInterface> = (props) => {
+    const {token} = props
     return (
         <Grid
             bg="white"
@@ -14,6 +20,7 @@ const Navbar = () => {
             zIndex={9}
             templateColumns="repeat(2, 1fr)"
             placeContent='center'
+            alignItems='center'
             boxShadow="-1px -1px 9px 0px rgba(0,0,0,0.79)"
         >
             <Box>
@@ -21,11 +28,17 @@ const Navbar = () => {
             </Box>
             <Box
                 d="flex"
+                alignItems='center'
                 justifyContent='flex-end'
             >
 
                 <Link px="5">Order</Link>
-                <Link px="5" href="/login">Login</Link>
+                {
+                    token && <Button>Logout</Button>
+                }
+                {
+                    !token && <Link px="5" href="/login">Login</Link>
+                }
             </Box>
         </Grid>
     );

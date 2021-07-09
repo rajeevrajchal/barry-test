@@ -2,6 +2,8 @@ import React from 'react';
 import Navbar from "@components/Navbar";
 import {Button, Flex, Grid, Input, Link, Select, Spacer, Stack, Text} from "@chakra-ui/react";
 import {useFormik} from "formik";
+import {IncomingMessage, ServerResponse} from "http";
+import Cookies from "cookies";
 
 const Register = () => {
     const formik = useFormik({
@@ -97,3 +99,20 @@ const Register = () => {
 };
 
 export default Register;
+
+export async function getServerSideProps(context: { req: IncomingMessage; res: ServerResponse; }) {
+    const secure: boolean = process.env.NODE_ENV === 'production';
+    const myCookies = new Cookies(context.req, context.res, { secure });
+    const accessToken = myCookies.get('BarryTestAccessToken');
+    if (accessToken) {
+        return {
+            redirect: {
+                destination: '/seller',
+                permanent: false,
+            },
+        };
+    }
+    return {
+        props: {}
+    }
+}

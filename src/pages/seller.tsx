@@ -29,7 +29,7 @@ const Seller:NextPage<SellerInterface> = (props) => {
     }
     return (
         <>
-            <Navbar/>
+            <Navbar token={accessToken}/>
             <Grid
                 templateColumns="15rem 1fr"
                 gap={10}
@@ -98,7 +98,7 @@ const Seller:NextPage<SellerInterface> = (props) => {
 export default Seller;
 
 export async function getServerSideProps(context: { req: IncomingMessage; res: ServerResponse; }) {
-    
+
     const secure: boolean = process.env.NODE_ENV === 'production';
     const myCookies = new Cookies(context.req, context.res, { secure });
     const accessToken = myCookies.get('BarryTestAccessToken');

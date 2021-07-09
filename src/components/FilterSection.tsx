@@ -1,17 +1,18 @@
 import React from 'react';
-import * as Yup from 'yup';
 import {useFormik} from 'formik';
 import {Button, Input, Select, Stack, Text} from "@chakra-ui/react";
 import {NextPage} from "next";
 import {$FIXME} from "@utils/constant";
+import {gql} from "@apollo/client";
+import client from "@lib/apolloClient";
 
 
 interface FilterSectionInterface {
-    getFilterData: (obj: $FIXME) => void
+    setQueryApartments: (obj: $FIXME) => void
 }
 
 const FilterSection: NextPage<FilterSectionInterface> = (props) => {
-    const {getFilterData} = props
+    const {setQueryApartments} = props
     const formik = useFormik({
         initialValues: {
             type: '',
@@ -23,8 +24,42 @@ const FilterSection: NextPage<FilterSectionInterface> = (props) => {
             minDate: '',
             maxDate: '',
         },
-        onSubmit: (values) => {
-           getFilterData(values)
+        onSubmit: async (values) => {
+            const FilterQuery = gql`
+                query{
+                    findApartments(
+                        minPrice: ${values.minPrice || ' '}
+                        maxPrice: ${values.maxPrice || ' '}
+                        minRoom: ${values.minRoom || ' '}
+                        maxRoom: ${values.maxRoom || ' '}
+                        name: "${values.name || ' '}"
+                        type: "${values.type || ' ' }"
+                    ) {
+                        name
+                        id
+                        description
+                        type
+                        price
+                        number_room
+                        slots {
+                            id
+                            date
+                            booked
+                        }
+                    }
+                }
+            `;
+            const {
+                loading,
+                data: {findApartments},
+                error,
+            } = await client("").query({
+                query: FilterQuery,
+            });
+            console.log({loading, data: {findApartments}, error});
+            if (findApartments) {
+                setQueryApartments(findApartments);
+            }
         }
     })
     return (

@@ -126,5 +126,5 @@ export const uEnum = (values: $FIXME) => ({
 export const reference = (refTable: string) => ({
     type: Schema.Types.ObjectId,
     ref: refTable,
-    required: true
+    required: false
 })

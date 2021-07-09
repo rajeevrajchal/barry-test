@@ -7,7 +7,6 @@ const userSchema = new Schema({
     email: rString,
     role: rString,
     password: rString,
-    createdOrders: reference("orders")
 }, {
     timestamps: true
 })
