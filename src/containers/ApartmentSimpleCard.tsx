@@ -21,7 +21,7 @@ type Apartment = {
 
 interface ApartmentSimpleCard {
     apartment: Apartment,
-    bookButtonClick: (obj: $FIXME) => void | null;
+    bookButtonClick: (obj: $FIXME) => void;
 }
 
 const ApartmentSimpleCard: NextPage<ApartmentSimpleCard> = (props) => {

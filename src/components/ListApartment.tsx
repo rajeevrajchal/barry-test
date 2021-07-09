@@ -20,7 +20,7 @@ import EditApartment from "@components/EditApartment";
 interface ListApartmentInterface {
   apartments: $FIXME;
   isSeller: boolean;
-  bookButtonClick?: (obj: $FIXME) => void ;
+  bookButtonClick: (obj: $FIXME) => void ;
 }
 
 const ListApartment: NextPage<ListApartmentInterface> = (props) => {

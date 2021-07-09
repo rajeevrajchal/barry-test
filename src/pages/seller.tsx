@@ -22,7 +22,7 @@ const Seller:NextPage<SellerInterface> = (props) => {
             case "add":
                 return <AddApartment accessToken={accessToken}/>
             case "list":
-                return <ListApartment apartments={apartments} isSeller={true}/>
+                return <ListApartment apartments={apartments} isSeller={true}  bookButtonClick={(obj) => console.log(obj)}/>
             default:
                 return <Text> No Screen</Text>
         }
