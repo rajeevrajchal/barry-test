@@ -3,9 +3,9 @@ import { createHttpLink, ApolloClient, InMemoryCache } from "@apollo/client";
 import fetch from 'isomorphic-unfetch';
 import { setContext } from '@apollo/client/link/context';
 
+const url = process.env.NODE_ENV === 'production' ? "https://barry-test.vercel.app": 'http://localhost:3000';
 const httpLink = createHttpLink({
-    uri: 'https://barry-test.vercel.app/api/graphql',
-    // uri: 'http://localhost:4000/api/graphql',
+    uri: `${url}/api/graphql`,
     fetch: fetch,
 });
 
