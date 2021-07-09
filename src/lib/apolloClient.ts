@@ -4,8 +4,8 @@ import fetch from 'isomorphic-unfetch';
 import { setContext } from '@apollo/client/link/context';
 
 const httpLink = createHttpLink({
-    // uri: 'https://barry-test.vercel.app/api/graphql',
-    uri: 'http://localhost:4000/api/graphql',
+    uri: 'https://barry-test.vercel.app/api/graphql',
+    // uri: 'http://localhost:4000/api/graphql',
     fetch: fetch,
 });
 
