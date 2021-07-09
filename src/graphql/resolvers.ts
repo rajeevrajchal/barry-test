@@ -3,20 +3,50 @@ import {map, includes} from "lodash";
 import {$FIXME} from "@utils/constant";
 
 import {createToken} from "@lib/backend/jwt";
+import Cookies from 'cookies';
 import {checkPassword, hashPassword} from "@lib/backend/crypto";
+import {dbConnect} from "@lib/backend/db";
 
 import Apartment from "@models/apartment.model";
 import User from "@models/user.model";
 import Order from "@models/order.model";
 import Slot from "@models/slot.model";
+import { getUMonthM } from "@utils/uDate";
+
+dbConnect()
 export const resolvers = {
     Query: {
         //apartments
+        // {slot: {$gte: moment(_args.minDate), $lt: moment(_args.maxDate)}},
+
         getApartments: async (_parent: $FIXME, _args: $FIXME, _context: $FIXME) => {
             try {
-                const apartments = await Apartment.find()
+                const apartments = await Apartment.find().populate("seller")
                 if (apartments) {
-                    return map(apartments, async({_id, name, description, image, type, price, number_room}) => {
+                    return map(apartments, async ({_id, name, description, image, type, price, number_room}) => {
+                        const slots = await Slot.find({apartment: _id})
+                        return {
+                            id: _id,
+                            name: name,
+                            description: description,
+                            image: image,
+                            type: type,
+                            price: price,
+                            number_room: number_room,
+                            slots: slots
+                        }
+                    })
+                }
+            } catch (e) {
+                throw e
+            }
+        },
+        getApartmentsByUser: async (_parent: $FIXME, _args: $FIXME, _context: $FIXME) => {
+            try {
+                const {userID} = _args
+                const apartments = await Apartment.find({seller: userID}).populate("seller")
+                if (apartments) {
+                    return map(apartments, async ({_id, name, description, image, type, price, number_room}) => {
                         const slots = await Slot.find({apartment: _id})
                         return {
                             id: _id,
@@ -36,10 +66,10 @@ export const resolvers = {
         },
         getApartment: async (_: $FIXME, _args: $FIXME) => {
             try {
-                const {id} = _args
-                const apartment = await Apartment.findOne({_id: id})
+                const {name} = _args
+                const apartment = await Apartment.findOne({name: name}).populate("seller")
                 if (apartment) {
-                    const slots = await Slot.find({apartment: id})
+                    const slots = await Slot.find({apartment: apartment._id})
                     return {
                         id: apartment._id,
                         name: apartment.name,
@@ -55,9 +85,6 @@ export const resolvers = {
                 throw error;
             }
         },
-
-        // {slot: {$gte: moment(_args.minDate), $lt: moment(_args.maxDate)}},
-
         findApartments: async (_: $FIXME, _args: $FIXME) => {
             try {
                 const apartments = await Apartment.find({
@@ -67,7 +94,7 @@ export const resolvers = {
                         {price: {$gte: _args.minPrice, $lt: _args.maxPrice}},
                         {number_room: {$gte: _args.minRoom, $lt: _args.maxRoom}},
                     ]
-                })
+                }).populate("seller")
 
                 // const slots = await Slot.find({
                 //     $or: [
@@ -76,8 +103,8 @@ export const resolvers = {
                 // }).populate('apartment')
                 // console.log('the slots', slots)
 
-                if(apartments){
-                    return map(apartments, async({_id, name, description, image, type, price, number_room}) => {
+                if (apartments) {
+                    return map(apartments, async ({_id, name, description, image, type, price, number_room}) => {
                         const slots = await Slot.find({apartment: _id})
                         return {
                             id: _id,
@@ -155,26 +182,37 @@ export const resolvers = {
                 }
                 const isRoleMatch = includes(["admin", "seller"], user.role)
                 if (isRoleMatch === false) {
-                    return new Error("No Access, Only to admin")
+                    return new Error("No Access, Only to seller or admin")
                 }
-                const apartment = await Apartment.create(_args)
-                await map(_args.slot, async (slot) => {
-                    return await Slot.create({
-                        date: slot,
-                        booked: false,
-                        apartment: apartment._id,
+                if(isRoleMatch && user){
+                    const apartment = await Apartment.create({
+                        seller: "60e1e8036bdb893bce77400d",
+                        name: _args.name,
+                        type: _args.type,
+                        price: _args.price,
+                        number_room: _args.number_room,
+                        description: _args.description,
                     })
-                })
-                if (apartment) {
-                    return {
-                        id: apartment._id,
-                        name: apartment.name,
-                        description: apartment.description,
-                        image: apartment.image,
-                        type: apartment.type,
-                        price: apartment.price,
-                        number_rooms: apartment.number_rooms,
+                    await map(_args.slot, async (slot) => {
+                        return await Slot.create({
+                            date: slot,
+                            booked: false,
+                            apartment: apartment._id,
+                        })
+                    })
+                    if (apartment) {
+                        return {
+                            id: apartment._id,
+                            name: apartment.name,
+                            description: apartment.description,
+                            image: apartment.image,
+                            type: apartment.type,
+                            price: apartment.price,
+                            number_rooms: apartment.number_rooms,
+                        }
                     }
+                }else{
+                    return new Error("No Access, Only to seller or admin")
                 }
             } catch (error) {
                 return error;
@@ -209,6 +247,7 @@ export const resolvers = {
                 throw e
             }
         },
+
         deleteApartment: async (_: $FIXME, _args: $FIXME, _context: $FIXME) => {
             try {
                 const {status, user, message} = _context.token
@@ -260,9 +299,14 @@ export const resolvers = {
                 throw e
             }
         },
+
         loginUser: async (_parent: $FIXME, _args: $FIXME, _context: $FIXME) => {
             try {
+            
                 const {email, password} = _args
+                const {req, res} = _context
+                let secure: boolean = process.env.NODE_ENV === 'production';
+                const myCookies = new Cookies(req, res, { secure });
                 const userExist: $FIXME = await User.findOne({email: email});
                 if (!userExist) {
                     return new Error("Invalid User")
@@ -272,6 +316,15 @@ export const resolvers = {
                     return new Error("Invalid User")
                 }
                 const token = await createToken(userExist);
+                if(!token){
+                    return new Error("Something went worng")
+                }
+                myCookies.set('BarryTestAccessToken', token, {
+                    secure,
+                    sameSite: 'strict',
+                    maxAge: getUMonthM(),
+                    path: '/',
+                });
                 return {
                     id: userExist._id,
                     email: userExist.email,

@@ -3,7 +3,6 @@ import Cors from "micro-cors";
 import {typeDefs} from "@graphql/schema";
 import {resolvers} from "@graphql/resolvers";
 import {tokenVerification} from "@middleware/backend/tokenVerfication";
-import {dbConnect} from "@lib/backend/db";
 
 const cors = Cors({
     allowMethods: ["GET", "POST", "OPTIONS"]
@@ -18,13 +17,13 @@ const apolloServer = new ApolloServer({
             'editor.theme': 'light',
         }
     },
-    context: async ({req}) => {
-        await dbConnect()
+    context: async (ctx) => {
         return {
-            ...req,
-            token: req && req.headers.authorization ? await tokenVerification(req) : ""
+            ...ctx,
+            token: ctx.req && ctx.req.headers.authorization ? await tokenVerification(ctx.req) : ""
         }
     }
+
 })
 
 const handler = apolloServer.createHandler({

@@ -10,6 +10,7 @@ export const typeDefs = gql`
         price: Int!
         number_room: Int!
         slots: [Slot]!
+        seller:User
     }
     type Slot {
         id: ID!
@@ -40,7 +41,8 @@ export const typeDefs = gql`
     type Query {
         #for apartments
         getApartments: [Apartments]
-        getApartment(id: String!): Apartments!
+        getApartment(name: String!): Apartments!
+        getApartmentsByUser(userID: String!): [Apartments]
         findApartments(
             name: String
             type: String

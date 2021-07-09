@@ -15,6 +15,7 @@ const FilterSection: NextPage<FilterSectionInterface> = (props) => {
     const formik = useFormik({
         initialValues: {
             type: '',
+            name:'',
             minPrice: '',
             maxPrice: '',
             minRoom: '',
@@ -27,7 +28,16 @@ const FilterSection: NextPage<FilterSectionInterface> = (props) => {
         }
     })
     return (
-        <Stack spacing={5} direction="column" align="center">
+        <Stack spacing={5} direction="column" align="center" height="80vh" overflowY="scroll">
+            <Stack width="100%">
+                <Text width="100%">Name: </Text>
+                <Input
+                    placeholder="Name"
+                    name="name"
+                    type='text'
+                    onChange={formik.handleChange}
+                    value={formik.values.name}/>
+            </Stack>
             <Stack width="100%">
                 <Text width="100%">Apartment Type: </Text>
                 <Select

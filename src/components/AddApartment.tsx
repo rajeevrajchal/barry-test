@@ -1,8 +1,15 @@
 import React from 'react';
 import {Button, Input, Select, Stack, Text, Textarea} from "@chakra-ui/react";
 import {useFormik} from "formik";
+import { gql } from '@apollo/client';
+import client from '@lib/apolloClient';
+import { NextPage } from 'next';
 
-const AddApartment = () => {
+interface AddApartment {
+    accessToken: string
+}
+const AddApartment:NextPage<AddApartment> = (props) => {
+    const {accessToken} = props
     const formik = useFormik({
         initialValues: {
             price: "",
@@ -10,9 +17,28 @@ const AddApartment = () => {
             name: '',
             description: '',
             type: '',
+            date:''
         },
         onSubmit: async (values) => {
             console.log(' the values are', values)
+            const dates = [values.date]
+            const CreateApartment = gql`
+                mutation{
+                        storeApartment(
+                            name:"${values.name}"
+                            type: "${values.type}"
+                            price: ${values.price}
+                            number_room:  ${values.number_room}
+                            description:" ${values.description}"
+                            slot:["${dates}"]
+                        ){
+                            id
+                        }
+                    }
+            ` 
+            const {data: {storeApartment}} = await client(accessToken).mutate({mutation: CreateApartment})
+            console.log({storeApartment})
+
         }
     })
     return (
@@ -21,10 +47,11 @@ const AddApartment = () => {
             spacing={5}
             borderRadius='10px'
             height='90vh'
+            overflowY="scroll"
             boxShadow="0px 0px 5px 0px rgba(0,0,0,0.7)"
         >
             <Stack>
-                <Text>Email</Text>
+                <Text>Name</Text>
                 <Input placeholder="Name"
                        type="text"
                        name="name"
@@ -33,7 +60,7 @@ const AddApartment = () => {
                 />
             </Stack>
             <Stack>
-                <Text>Password</Text>
+                <Text>Price</Text>
                 <Input placeholder="Price"
                        type="number"
                        name="price"
@@ -48,6 +75,15 @@ const AddApartment = () => {
                        name="number_room"
                        onChange={formik.handleChange}
                        value={formik.values.number_room}
+                />
+            </Stack>
+             <Stack>
+                <Text>Booking Date</Text>
+                <Input placeholder="No of rooms"
+                       type="date"
+                       name="date"
+                       onChange={formik.handleChange}
+                       value={formik.values.date}
                 />
             </Stack>
             <Stack>

@@ -3,11 +3,11 @@ import {Box, Button, Grid} from "@chakra-ui/react"
 import Navbar from "@components/Navbar";
 import FilterSection from "@components/FilterSection";
 import ListApartment from "@components/ListApartment";
-import {gql, useQuery} from "@apollo/client";
+import {gql} from "@apollo/client";
 import client from "@lib/apolloClient";
 import {$FIXME} from "@utils/constant";
 import {NextPage} from "next";
-import { useState} from "react";
+import {useState} from "react";
 
 interface HomeProps {
     apartments: $FIXME
@@ -28,12 +28,12 @@ const Home: NextPage<HomeProps> = (props) => {
         const FilterQuery = gql`
             {
                 findApartments(
-                    minPrice:10
-                    maxPrice: 20
-                    minRoom:20
-                    maxRoom:10
-                    name:""
-                    type:""
+                    minPrice:5
+                    maxPrice: 10
+                    minRoom:15
+                    maxRoom:20
+                    name:"river"
+                    type:"house"
                 ){
                     id
                     name
@@ -45,10 +45,13 @@ const Home: NextPage<HomeProps> = (props) => {
                 }
             }
         `
-        const {loading, data, error} = await client.query({
+        const {loading, data: {findApartments}, error} = await client('').query({
             query: FilterQuery
         })
-        console.log({loading, data, error})
+        console.log({loading, data: {findApartments}, error})
+        if (findApartments) {
+            setQueryApartments(findApartments)
+        }
     }
 
     return (
@@ -72,7 +75,7 @@ const Home: NextPage<HomeProps> = (props) => {
                     gap={5}
                 >
                     <FilterSection getFilterData={getFilterData}/>
-                    <ListApartment apartments={queryApartments}/>
+                    <ListApartment apartments={queryApartments} isSeller={false}/>
                 </Grid>
             </Box>
         </>
@@ -99,7 +102,7 @@ export async function getServerSideProps() {
             }
         }
     `
-    const {data: {getApartments}} = await client.query({
+    const {data: {getApartments}} = await client('').query({
         query: fetchApartment
     })
 

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import {$FIXME} from "@utils/constant";
 
 const connection: $FIXME = {}
-
+// mongodb+srv://rrajchal:freelance@barry-test.5gyfz.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
 //FUNCTION TO CONNECT MONGO DB
 export const dbConnect = async () => {
 
@@ -12,7 +12,7 @@ export const dbConnect = async () => {
     }
     //ELSE CONNECT
     const db = await mongoose.connect(
-        'mongodb+srv://rrajchal:freelance@barry-test.5gyfz.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', {
+        'mongodb://localhost:27017/barry-test', {
             useNewUrlParser: true,
             useUnifiedTopology: true,
             useFindAndModify: true,

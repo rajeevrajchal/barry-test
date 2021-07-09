@@ -1,6 +1,7 @@
 import React from 'react';
 import {GridItem, Image, Box, Button, Stack, Text} from "@chakra-ui/react";
 import {NextPage} from "next";
+import {useRouter} from "next/router";
 
 type Slot = {
     id: string
@@ -23,6 +24,7 @@ interface ApartmentSimpleCard {
 
 const ApartmentSimpleCard: NextPage<ApartmentSimpleCard> = (props) => {
     const {apartment: {id, name, price, number_room}} = props
+    const router = useRouter()
     return (
         <GridItem w="100%"
                   cursor={'pointer'}
@@ -33,6 +35,9 @@ const ApartmentSimpleCard: NextPage<ApartmentSimpleCard> = (props) => {
                       transform: "translateY(1px)"
                   }}
                   transition='.2s ease-in-out'
+                  onClick={() => {
+                      router.push(`/${name}`)
+                  }}
 
         >
             <Image
