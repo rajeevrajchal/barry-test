@@ -18,8 +18,8 @@ const authLink = (token: string | null) => setContext((_, { headers }) => {
   }
 });
 
-const client = (token: string | null) => new ApolloClient({
-    link: authLink(token).concat(httpLink),
+const client = (token?: string) => new ApolloClient({
+    link: authLink(token || '').concat(httpLink),
     cache: new InMemoryCache(),
     credentials: 'include'
 

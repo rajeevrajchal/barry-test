@@ -5,7 +5,8 @@ import {resolvers} from "@graphql/resolvers";
 import {tokenVerification} from "@middleware/backend/tokenVerfication";
 
 const cors = Cors({
-    allowMethods: ["GET", "POST", "OPTIONS"]
+    allowMethods: ["GET", "POST", "OPTIONS"],
+    origin:"same-origin"
 });
 
 const apolloServer = new ApolloServer({
